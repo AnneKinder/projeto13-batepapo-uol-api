@@ -33,6 +33,12 @@ const partiCollection = db.collection("participants");
 
 app.post("/participants", async (req, res) => {
   const { name } = req.body;
+
+const newUser = {
+    name: name,
+    lastStatus: Date.now()
+}
+
   const validation = partiSchema.validate(req.body, { abortEarly: false });
 
   if (validation.error) {
@@ -47,17 +53,19 @@ app.post("/participants", async (req, res) => {
       res.sendStatus(409);
       return;
     }
-    await partiCollection.insertOne(req.body);
+    await partiCollection.insertOne(newUser);
     res.sendStatus(201);
   } catch (err) {
     console.log(err);
   }
 });
 
+
 app.get("/participants", async (req, res) => {
-  const participants = await partiCollection.find().toArray();
-  res.send(participants);
-});
+    const participants = await partiCollection.find().toArray();
+    res.send(participants);
+  });
+
 
 app.listen(process.env.PORT, () =>
   console.log(`Server running in port ${process.env.PORT}`)
