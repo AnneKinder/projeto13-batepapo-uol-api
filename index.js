@@ -32,8 +32,8 @@ const partiCollection = db.collection("participants");
 //ROUTES
 
 app.post("/participants", async (req, res) => {
-  const { participant } = req.body;
-  const validation = partiSchema.validate(participant, { abortEarly: false });
+  const { name } = req.body;
+  const validation = partiSchema.validate(req.body, { abortEarly: false });
 
   if (validation.error) {
     const errors = validation.error.details.map((detail) => detail.message);
@@ -41,7 +41,7 @@ app.post("/participants", async (req, res) => {
     return;
   }
 
-// const isLogged = partiCollection.findOne({ name: participant.name });
+// const isLogged = partiCollection.findOne({ name: name });
 
 // if (isLogged) {
 // res.sendStatus(409);
@@ -49,7 +49,7 @@ app.post("/participants", async (req, res) => {
 // }
 
   try {
-    await partiCollection.insertOne({ participant });
+    await partiCollection.insertOne( req.body );
     res.sendStatus(201);
   } catch (err) {
     console.log(err);
@@ -60,9 +60,10 @@ app.post("/participants", async (req, res) => {
 
 
 
-// app.get('/participants', async (req, res) => {
-//     res.send(partiCollection)
-// })
+app.get('/participants', async (req, res) => {
+const participants = await partiCollection.find().toArray()
+res.send(participants)
+ })
 
 
 
