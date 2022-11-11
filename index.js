@@ -41,43 +41,23 @@ app.post("/participants", async (req, res) => {
     return;
   }
 
-// const isLogged = partiCollection.findOne({ name: name });
-
-// if (isLogged) {
-// res.sendStatus(409);
-//  return;
-// }
-
   try {
-    await partiCollection.insertOne( req.body );
+    const isLogged = await partiCollection.findOne({ name: name });
+    if (isLogged) {
+      res.sendStatus(409);
+      return;
+    }
+    await partiCollection.insertOne(req.body);
     res.sendStatus(201);
   } catch (err) {
     console.log(err);
   }
 });
 
-
-
-
-
-app.get('/participants', async (req, res) => {
-const participants = await partiCollection.find().toArray()
-res.send(participants)
- })
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+app.get("/participants", async (req, res) => {
+  const participants = await partiCollection.find().toArray();
+  res.send(participants);
+});
 
 app.listen(process.env.PORT, () =>
   console.log(`Server running in port ${process.env.PORT}`)
