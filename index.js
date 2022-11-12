@@ -13,7 +13,7 @@ const partiSchema = joi.object({
 const messageSchema = joi.object({
   text: joi.string().required(),
   to: joi.string().required(),
-  type: joi.string().valid('private_message','message').required()
+  type: joi.string().valid("private_message", "message").required(),
 });
 
 //CONFIGS
@@ -64,6 +64,9 @@ app.post("/participants", async (req, res) => {
     }
     await partiColl.insertOne(newUser);
     res.sendStatus(201);
+messageColl.insertOne({from: name, to: 'Todos', text: 'entra na sala...', type: 'status', time: dayjs().format("HH:mm:ss")})
+
+
   } catch (err) {
     console.log(err);
   }
@@ -75,21 +78,18 @@ app.get("/participants", async (req, res) => {
 });
 
 
-
-
 //messages
 
 app.post("/messages", async (req, res) => {
   const { to, text, type } = req.body;
-  const user = req.headers.user
-  const newMessage ={
+  const user = req.headers.user;
+  const newMessage = {
     from: user,
     to: to,
     text: text,
     type: type,
-    time: dayjs().format("HH:mm:ss")
-
-  }
+    time: dayjs().format("HH:mm:ss"),
+  };
 
   const validation = messageSchema.validate(req.body, { abortEarly: false });
 
@@ -99,46 +99,24 @@ app.post("/messages", async (req, res) => {
     return;
   }
 
- 
-
-
   try {
-
     const isPresent = await partiColl.findOne({ name: user });
     if (!isPresent) {
-      res.status(404).send("Participante não está na lista")
+      res.status(404).send("Participante não está na lista");
       return;
     }
 
-
     await messageColl.insertOne(newMessage);
     res.sendStatus(201);
-    console.log(newMessage)
   } catch (err) {
     console.log(err);
   }
 });
 
-
-
-
-
-
 app.get("/messages", async (req, res) => {
-    const messages = await messageColl.find().toArray();
-    res.send(messages);
-  });
-
-
-
-
-
-
-
-
-
-
-
+  const messages = await messageColl.find().toArray();
+  res.send(messages);
+});
 
 app.listen(process.env.PORT, () =>
   console.log(`Server running in port ${process.env.PORT}`)
