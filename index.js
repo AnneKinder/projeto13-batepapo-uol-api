@@ -128,28 +128,26 @@ app.get("/messages", async (req, res) => {
   res.send(limited);
 });
 
-
 //status
 
 app.post("/status", async (req, res) => {
- const user = req.headers.user
+  const user = req.headers.user;
 
- try{
+  try {
+    const containsUser = await partiColl.findOne({ name: user });
+    if (!containsUser) {
+      res.sendStatus(404);
+      return;
+    }
 
-  const containsUser = await partiColl.findOne({name: user})
-  if (!containsUser){
-    res.sendStatus(404)
-    return
+   await partiColl.updateOne({"name":user},{$set: {"lastStatus": Date.now()}})
+res.sendStatus(200)
+
+
+  } catch (err) {
+    console.log(err);
   }
-
- }
-catch(err){
-  console.log(err)
-}
-
-
-})
-
+});
 
 app.listen(process.env.PORT, () =>
   console.log(`Server running in port ${process.env.PORT}`)
