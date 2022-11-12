@@ -114,12 +114,20 @@ app.post("/messages", async (req, res) => {
 });
 
 app.get("/messages", async (req, res) => {
+
+  const user = req.headers.user
 const limit = Number(req.query.limit)
 
 
   const messages = await messageColl.find().toArray();
+
+const filtered = messages.filter((mess) => {
+  mess.text==="oi"
+})
+
   const limited = messages.slice(-limit, messages.length)
   res.send(limited);
+ 
 });
 
 
