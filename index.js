@@ -114,9 +114,20 @@ app.post("/messages", async (req, res) => {
 });
 
 app.get("/messages", async (req, res) => {
+const limit = Number(req.query.limit)
+
+
   const messages = await messageColl.find().toArray();
-  res.send(messages);
+  const limited = messages.slice(-limit, messages.length)
+  res.send(limited);
 });
+
+
+
+
+
+
+
 
 app.listen(process.env.PORT, () =>
   console.log(`Server running in port ${process.env.PORT}`)
