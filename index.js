@@ -12,7 +12,7 @@ const partiSchema = joi.object({
 const messageSchema = joi.object({
   text: joi.string().required(),
   to: joi.string().required(),
-  type: joi.string().valid('private_message','message')
+  type: joi.string().valid('private_message','message').required()
 });
 
 //CONFIGS
@@ -77,6 +77,13 @@ app.get("/participants", async (req, res) => {
 
 app.post("/messages", async (req, res) => {
   const { to, text, type } = req.body;
+  const user = req.headers.user
+  const newMessage ={
+    from: user,
+    to: to,
+    text: text,
+    type: type
+  }
 
   const validation = messageSchema.validate(req.body, { abortEarly: false });
 
@@ -87,7 +94,7 @@ app.post("/messages", async (req, res) => {
   }
 
   try {
-    await messageColl.insertOne(req.body);
+    await messageColl.insertOne(newMessage);
     res.sendStatus(201);
   } catch (err) {
     console.log(err);
@@ -98,6 +105,7 @@ app.post("/messages", async (req, res) => {
 app.get("/messages", async (req, res) => {
     const messages = await messageColl.find().toArray();
     res.send(messages);
+    console.log(messages)
   });
 
 
