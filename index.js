@@ -9,6 +9,12 @@ const partiSchema = joi.object({
   name: joi.string().required(),
 });
 
+const messageSchema = joi.object({
+  text: joi.string().required(),
+  to: joi.string().required(),
+  type: "private_message" || "message",
+});
+
 //CONFIGS
 const app = express();
 dotenv.config();
@@ -27,17 +33,19 @@ try {
 
 //GLOBALS
 const db = mongoClient.db("uol");
-const partiCollection = db.collection("participants");
+const partiColl = db.collection("participants");
+const messageColl = db.collection("messages");
 
 //ROUTES
 
+//participants
 app.post("/participants", async (req, res) => {
   const { name } = req.body;
 
-const newUser = {
+  const newUser = {
     name: name,
-    lastStatus: Date.now()
-}
+    lastStatus: Date.now(),
+  };
 
   const validation = partiSchema.validate(req.body, { abortEarly: false });
 
@@ -48,12 +56,38 @@ const newUser = {
   }
 
   try {
-    const isLogged = await partiCollection.findOne({ name: name });
+    const isLogged = await partiColl.findOne({ name: name });
     if (isLogged) {
       res.sendStatus(409);
       return;
     }
-    await partiCollection.insertOne(newUser);
+    await partiColl.insertOne(newUser);
+    res.sendStatus(201);
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+app.get("/participants", async (req, res) => {
+  const participants = await partiColl.find().toArray();
+  res.send(participants);
+});
+
+//messages
+
+app.post("/messages", async (req, res) => {
+  const { to, text, type } = req.body;
+
+  const validation = messageSchema.validate(req.body, { abortEarly: false });
+
+  if (validation.error) {
+    const errors = validation.error.details.map((detail) => detail.message);
+    res.status(422).send(errors);
+    return;
+  }
+
+  try {
+    await messageColl.insertOne(req.body);
     res.sendStatus(201);
   } catch (err) {
     console.log(err);
@@ -61,10 +95,20 @@ const newUser = {
 });
 
 
-app.get("/participants", async (req, res) => {
-    const participants = await partiCollection.find().toArray();
-    res.send(participants);
+app.get("/messages", async (req, res) => {
+    const messages = await messageColl.find().toArray();
+    res.send(messages);
   });
+
+
+
+
+
+
+
+
+
+
 
 
 app.listen(process.env.PORT, () =>
