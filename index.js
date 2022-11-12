@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import { MongoClient } from "mongodb";
 import cors from "cors";
 import joi from "joi";
+import dayjs from "dayjs";
 
 //JOI
 const partiSchema = joi.object({
@@ -73,6 +74,9 @@ app.get("/participants", async (req, res) => {
   res.send(participants);
 });
 
+
+
+
 //messages
 
 app.post("/messages", async (req, res) => {
@@ -82,7 +86,9 @@ app.post("/messages", async (req, res) => {
     from: user,
     to: to,
     text: text,
-    type: type
+    type: type,
+    time: dayjs().format("HH:mm:ss")
+
   }
 
   const validation = messageSchema.validate(req.body, { abortEarly: false });
@@ -93,19 +99,34 @@ app.post("/messages", async (req, res) => {
     return;
   }
 
+ 
+
+
   try {
+
+    const isPresent = await partiColl.findOne({ name: user });
+    if (!isPresent) {
+      res.status(404).send("Participante não está na lista")
+      return;
+    }
+
+
     await messageColl.insertOne(newMessage);
     res.sendStatus(201);
+    console.log(newMessage)
   } catch (err) {
     console.log(err);
   }
 });
 
 
+
+
+
+
 app.get("/messages", async (req, res) => {
     const messages = await messageColl.find().toArray();
     res.send(messages);
-    console.log(messages)
   });
 
 
