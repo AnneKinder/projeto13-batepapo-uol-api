@@ -12,7 +12,7 @@ const partiSchema = joi.object({
 const messageSchema = joi.object({
   text: joi.string().required(),
   to: joi.string().required(),
-  type: "private_message" || "message",
+  type: joi.string().valid('private_message','message')
 });
 
 //CONFIGS
