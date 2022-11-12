@@ -123,12 +123,9 @@ app.get("/messages", async (req, res) => {
 
   const messages = await messageColl.find().toArray();
   const filtered = await messageColl.find( { $or: [ { from: user }, { to: "Todos" }, { to: user }] } ).toArray()
-//console.log(filtered)
-  // const elem = await messageColl.find({"from" : user}).toArray()
-  //console.log(elem)
 
-  const limited = messages.slice(-limit, messages.length)
-  res.send(filtered);
+  const limited = filtered.slice(-limit, filtered.length)
+  res.send(limited);
  
 });
 
