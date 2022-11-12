@@ -116,17 +116,19 @@ app.post("/messages", async (req, res) => {
 app.get("/messages", async (req, res) => {
 
   const user = req.headers.user
-const limit = Number(req.query.limit)
+  const limit = Number(req.query.limit)
+
+ 
 
 
   const messages = await messageColl.find().toArray();
-
-const filtered = messages.filter((mess) => {
-  mess.text==="oi"
-})
+  const filtered = await messageColl.find( { $or: [ { from: user }, { to: "Todos" }, { to: user }] } ).toArray()
+//console.log(filtered)
+  // const elem = await messageColl.find({"from" : user}).toArray()
+  //console.log(elem)
 
   const limited = messages.slice(-limit, messages.length)
-  res.send(limited);
+  res.send(filtered);
  
 });
 
