@@ -64,9 +64,13 @@ app.post("/participants", async (req, res) => {
     }
     await partiColl.insertOne(newUser);
     res.sendStatus(201);
-messageColl.insertOne({from: name, to: 'Todos', text: 'entra na sala...', type: 'status', time: dayjs().format("HH:mm:ss")})
-
-
+    messageColl.insertOne({
+      from: name,
+      to: "Todos",
+      text: "entra na sala...",
+      type: "status",
+      time: dayjs().format("HH:mm:ss"),
+    });
   } catch (err) {
     console.log(err);
   }
@@ -76,7 +80,6 @@ app.get("/participants", async (req, res) => {
   const participants = await partiColl.find().toArray();
   res.send(participants);
 });
-
 
 //messages
 
@@ -114,26 +117,38 @@ app.post("/messages", async (req, res) => {
 });
 
 app.get("/messages", async (req, res) => {
+  const user = req.headers.user;
+  const limit = Number(req.query.limit);
 
-  const user = req.headers.user
-  const limit = Number(req.query.limit)
+  const filtered = await messageColl
+    .find({ $or: [{ from: user }, { to: "Todos" }, { to: user }] })
+    .toArray();
 
- 
-
-
-  const messages = await messageColl.find().toArray();
-  const filtered = await messageColl.find( { $or: [ { from: user }, { to: "Todos" }, { to: user }] } ).toArray()
-
-  const limited = filtered.slice(-limit, filtered.length)
+  const limited = filtered.slice(-limit, filtered.length);
   res.send(limited);
- 
 });
 
 
+//status
+
+app.post("/status", async (req, res) => {
+ const user = req.headers.user
+
+ try{
+
+  const containsUser = await partiColl.findOne({name: user})
+  if (!containsUser){
+    res.sendStatus(404)
+    return
+  }
+
+ }
+catch(err){
+  console.log(err)
+}
 
 
-
-
+})
 
 
 app.listen(process.env.PORT, () =>
