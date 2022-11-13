@@ -45,7 +45,7 @@ app.post("/participants", async (req, res) => {
 
   const newUser = {
     name: name,
-    lastStatus: (Math.floor(Date.now() / 1000))
+    lastStatus: Math.floor(Date.now() / 1000),
     //lastStatus: Date.now(),
   };
 
@@ -141,41 +141,36 @@ app.post("/status", async (req, res) => {
       return;
     }
 
-   await partiColl.updateOne({"name":user},{$set: {"lastStatus": (Math.floor(Date.now() / 1000))}})
-res.sendStatus(200)
-
-
+    await partiColl.updateOne(
+      { name: user },
+      { $set: { lastStatus: Math.floor(Date.now() / 1000) } }
+    );
+    res.sendStatus(200);
   } catch (err) {
     console.log(err);
   }
 });
 
-
 //online sweep
 
 setInterval(async () => {
+  try {
+    let partiArray = await partiColl.find().toArray();
+    let offlineUsers = await partiArray.filter(
+      (parti) => parti.lastStatus <= Math.floor(Date.now() / 1000) - 10
+    );
 
-try{
-  let partiArray = await partiColl.find().toArray()
-  let offlineUsers = partiArray.filter((parti =>parti.lastStatus<=(Math.floor(Date.now() / 1000) )-10))
-
-  offlineUsers.forEach((obj) => {
-
-   partiColl.deleteOne({ name: obj.name });
-   
-
-
-  })
-}
-catch(err){
-  console.log(err)
-}
+    await offlineUsers.forEach((obj) => {
+      partiColl.deleteOne({ name: obj.name });
+    });
 
 
 
 
-
-}, 15000)
+  } catch (err) {
+    console.log(err);
+  }
+}, 15000);
 
 app.listen(process.env.PORT, () =>
   console.log(`Server running in port ${process.env.PORT}`)
