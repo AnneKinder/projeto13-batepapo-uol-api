@@ -158,6 +158,14 @@ setInterval(async () => {
 try{
   let partiArray = await partiColl.find().toArray()
   let offlineUsers = partiArray.filter((parti =>parti.lastStatus<=(Math.floor(Date.now() / 1000) )-10))
+
+  offlineUsers.forEach((obj) => {
+
+   partiColl.deleteOne({ name: obj.name });
+   
+
+
+  })
 }
 catch(err){
   console.log(err)
