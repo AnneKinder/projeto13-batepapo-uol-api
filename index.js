@@ -156,12 +156,13 @@ app.post("/status", async (req, res) => {
 setInterval(async () => {
   try {
     let partiArray = await partiColl.find().toArray();
-    let offlineUsers = await partiArray.filter(
+    let offlineUsers = partiArray.filter(
       (parti) => parti.lastStatus <= Math.floor(Date.now() / 1000) - 10
     );
 
-    await offlineUsers.forEach((obj) => {
+     offlineUsers.map((obj) => {
       partiColl.deleteOne({ name: obj.name });
+     messageColl.insertOne({from: obj.name, to: 'Todos', text: 'sai da sala...', type: 'status', time: dayjs().format("HH:mm:ss")})
     });
 
 
