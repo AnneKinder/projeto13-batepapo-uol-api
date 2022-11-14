@@ -45,9 +45,7 @@ app.post("/participants", async (req, res) => {
 
   const newUser = {
     name: name,
-    lastStatus: Math.floor(Date.now() / 1000),
-    //lastStatus: Date.now(),
-  };
+    lastStatus: Math.floor(Date.now() / 1000)  };
 
   const validation = partiSchema.validate(req.body, { abortEarly: false });
 
@@ -160,12 +158,10 @@ setInterval(async () => {
       (parti) => parti.lastStatus <= Math.floor(Date.now() / 1000) - 10
     );
 
-     offlineUsers.map((obj) => {
-      partiColl.deleteOne({ name: obj.name });
+     await offlineUsers.map((obj) => {
+    partiColl.deleteOne({ name: obj.name });
      messageColl.insertOne({from: obj.name, to: 'Todos', text: 'sai da sala...', type: 'status', time: dayjs().format("HH:mm:ss")})
     });
-
-
 
 
   } catch (err) {
