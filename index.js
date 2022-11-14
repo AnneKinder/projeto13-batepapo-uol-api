@@ -5,7 +5,6 @@ import cors from "cors";
 import joi from "joi";
 import dayjs from "dayjs";
 
-//JOI
 const partiSchema = joi.object({
   name: joi.string().required(),
 });
@@ -16,13 +15,11 @@ const messageSchema = joi.object({
   type: joi.string().valid("private_message", "message").required(),
 });
 
-//CONFIGS
 const app = express();
 dotenv.config();
 app.use(express.json());
 app.use(cors());
 
-//MONGODB
 const mongoClient = new MongoClient(process.env.MONGO_URI);
 
 try {
@@ -32,20 +29,17 @@ try {
   console.log(err);
 }
 
-//GLOBALS
 const db = mongoClient.db("uol");
 const partiColl = db.collection("participants");
 const messageColl = db.collection("messages");
 
-//ROUTES
-
-//participants
 app.post("/participants", async (req, res) => {
   const { name } = req.body;
 
   const newUser = {
     name: name,
-    lastStatus: Math.floor(Date.now() / 1000)  };
+    lastStatus: Math.floor(Date.now() / 1000),
+  };
 
   const validation = partiSchema.validate(req.body, { abortEarly: false });
 
@@ -79,8 +73,6 @@ app.get("/participants", async (req, res) => {
   const participants = await partiColl.find().toArray();
   res.send(participants);
 });
-
-//messages
 
 app.post("/messages", async (req, res) => {
   const { to, text, type } = req.body;
@@ -127,8 +119,6 @@ app.get("/messages", async (req, res) => {
   res.send(limited);
 });
 
-//status
-
 app.post("/status", async (req, res) => {
   const user = req.headers.user;
 
@@ -149,8 +139,6 @@ app.post("/status", async (req, res) => {
   }
 });
 
-//online sweep
-
 setInterval(async () => {
   try {
     let partiArray = await partiColl.find().toArray();
@@ -158,12 +146,16 @@ setInterval(async () => {
       (parti) => parti.lastStatus <= Math.floor(Date.now() / 1000) - 10
     );
 
-     await offlineUsers.map((obj) => {
-    partiColl.deleteOne({ name: obj.name });
-     messageColl.insertOne({from: obj.name, to: 'Todos', text: 'sai da sala...', type: 'status', time: dayjs().format("HH:mm:ss")})
+    await offlineUsers.map((obj) => {
+      partiColl.deleteOne({ name: obj.name });
+      messageColl.insertOne({
+        from: obj.name,
+        to: "Todos",
+        text: "sai da sala...",
+        type: "status",
+        time: dayjs().format("HH:mm:ss"),
+      });
     });
-
-
   } catch (err) {
     console.log(err);
   }
